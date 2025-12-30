@@ -1,4 +1,4 @@
-This Readme wirtten by AI.
+This Readme is wirtten by AI.
 
 # Kyun'Stop VST3
 
