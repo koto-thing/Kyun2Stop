@@ -1,3 +1,5 @@
+This Readme wirtten by AI.
+
 # Kyun'Stop VST3
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -23,8 +25,6 @@
 ### 🎨 ビジュアル (GUI)
 * **Yumekawa Theme**: パステルカラーの動くグラデーション背景。
 * **Audio Reactive Particles**: 出力音量に反応して弾む、半透明のアメーバ状パーティクル。音が止まると消滅します。
-* **Rainbow Border**: パネル周囲に広がる虹色のアニメーション枠線。
-* **Glassmorphism**: 視認性を確保しつつ背景を活かす、すりガラス風のUIパネル。
 
 ## 📦 ビルド方法 (Build)
 
