@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "TapeStop"
+name = "Kyun2Stop"
 version = "0.1.0"
 dependencies = [
  "nih_plug",
