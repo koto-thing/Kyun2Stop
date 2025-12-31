@@ -29,7 +29,7 @@ impl Default for TapeStop {
 }
 
 impl Plugin for TapeStop {
-    const NAME: &'static str = "Tape Stop";
+    const NAME: &'static str = "Kyun'Stop";
     const VENDOR: &'static str = "Goto Kenta";
     const URL: &'static str = "https://koto-thing.github.io/MyWebsite/";
     const EMAIL: &'static str = "gotoukenta62@gmail.com";

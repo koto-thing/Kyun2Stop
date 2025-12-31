@@ -1,4 +1,4 @@
-﻿use nih_plug::prelude::*;
+use nih_plug::prelude::*;
 use nih_plug_egui::{create_egui_editor, egui, widgets, EguiState};
 use nih_plug_egui::egui::{Color32, Mesh, Vec2, Pos2, Shape, Stroke, Visuals};
 
@@ -14,14 +14,15 @@ fn get_pastel_color(t: f64, offset: f64) -> Color32 {
     egui::ecolor::Hsva::new(hue, 0.4, 0.9, 1.0).into()
 }
 
-/**
- * ゆめかわ
- */
-fn get_yumekawa_color(t: f64, offset: f64) -> Color32 {
-    let wave = ((t * 0.2 + offset).sin() * 0.5 + 0.5) as f32;
-    let hue = 0.55 + (0.4 * wave);
+fn get_kawaii_color(t: f64, offset: f64) -> Color32 {
+    let hue = ((t * 0.1 + offset) % 1.0) as f32;
 
-    egui::ecolor::Hsva::new(hue, 0.35, 1.0, 1.0).into()
+    egui::ecolor::Hsva::new(
+        hue,
+        0.55,
+        1.0,
+        0.5
+    ).into()
 }
 
 /**
@@ -38,7 +39,7 @@ fn paint_amoeba(
     let mut mesh = Mesh::default();
 
     // 中心点をつくる
-    let center_color = Color32::WHITE.linear_multiply(0.8).gamma_multiply(0.5);
+    let center_color = color.linear_multiply(1.2);
 
     mesh.vertices.push(egui::epaint::Vertex {
         pos: center,
@@ -47,20 +48,20 @@ fn paint_amoeba(
     });
 
     // 外周の頂点を作る
-    let num_points = 32; // 頂点数
+    let num_points = 64; // 頂点数
     for i in 0..=num_points {
         // 0.0 ~ 2π
         let angle = (i as f64 / num_points as f64) * std::f64::consts::TAU;
 
         // ノイズ生成
-        let noise = (angle * 2.0 + time * 1.5 + seed).sin() * 0.15
-            + (angle * 3.0 - time * 1.0 + seed).cos() * 0.1;
+        let noise = (angle * 2.0 + time * 0.5 + seed).sin() * 0.15
+            + (angle * 3.0 - time * 0.3 + seed).cos() * 0.1;
 
+        // 頂点位置計算
         let r = radius * (1.0 + noise as f32);
-
-        // 極座標から直交座標に変換
         let pos = center + Vec2::angled(angle as f32) * r;
 
+        // 頂点色
         mesh.vertices.push(egui::epaint::Vertex {
             pos,
             uv: Pos2::ZERO,
@@ -78,25 +79,49 @@ fn paint_amoeba(
 }
 
 fn set_kawaii_style(ctx: &egui::Context) {
-    let mut visuals = Visuals::light(); // ベースはライトモード
+    let mut visuals = Visuals::light();
 
-    // ウィジェットの色をパステル系に
-    // 通常時の背景
-    visuals.widgets.inactive.bg_fill = Color32::from_rgb(245, 235, 240);
-    // ホバー時の背景
-    visuals.widgets.hovered.bg_fill = Color32::WHITE;
-    // クリック時の背景
-    visuals.widgets.active.bg_fill = Color32::from_rgb(255, 200, 220);
+    let pink_pale = Color32::from_rgb(255, 235, 245);
+    let pink_hover = Color32::from_rgb(255, 245, 250);
+    let pink_strong = Color32::from_rgb(255, 160, 200);
+    let pink_stroke = Color32::from_rgb(255, 120, 170);
+    let text_color = Color32::from_rgb(110, 80, 100);
 
-    // スライダーの中身や枠線
-    visuals.selection.bg_fill = Color32::from_rgb(255, 150, 180); // 濃いピンク
-    visuals.selection.stroke = Stroke::new(1.0, Color32::from_rgb(255, 100, 150));
+    // 全体の透明化
+    visuals.window_fill = Color32::TRANSPARENT;
+    visuals.panel_fill = Color32::TRANSPARENT;
 
-    // 文字色
-    let text_color = Color32::from_rgb(80, 60, 90);
-    visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0, text_color);
+    // 通常時
+    visuals.widgets.inactive.bg_fill = pink_pale;
+    visuals.widgets.inactive.weak_bg_fill = pink_pale;
+    visuals.widgets.inactive.bg_stroke = Stroke::new(1.0, pink_stroke);
     visuals.widgets.inactive.fg_stroke = Stroke::new(1.0, text_color);
-    visuals.widgets.hovered.fg_stroke = Stroke::new(1.5, text_color);
+
+    // ホバー時
+    visuals.widgets.hovered.bg_fill = pink_hover;
+    visuals.widgets.hovered.weak_bg_fill = pink_hover;
+    visuals.widgets.hovered.bg_stroke = Stroke::new(1.5, pink_stroke);
+    visuals.widgets.hovered.fg_stroke = Stroke::new(1.0, text_color);
+    visuals.widgets.hovered.expansion = 1.0;
+
+    // クリック/アクティブ時
+    visuals.widgets.active.bg_fill = pink_strong;
+    visuals.widgets.active.weak_bg_fill = pink_strong;
+    visuals.widgets.active.bg_stroke = Stroke::new(1.0, pink_stroke);
+    visuals.widgets.active.fg_stroke = Stroke::new(1.0, Color32::WHITE);
+    // 選択・入力済み部分
+    visuals.selection.bg_fill = pink_strong;
+    visuals.selection.stroke = Stroke::new(1.0, pink_stroke);
+
+    // コンボボックスのメニューなど
+    visuals.window_fill = Color32::from_rgb(255, 240, 250);
+
+    visuals.popup_shadow = egui::epaint::Shadow {
+        offset: [0, 5],
+        blur: 15,
+        spread: 2,
+        color: Color32::from_rgb(200, 150, 180).linear_multiply(0.4),
+    };
 
     ctx.set_visuals(visuals);
 }
@@ -118,7 +143,9 @@ pub fn create(
             let clean_amp = if amplitude < 0.001 { 0.0 } else { amplitude };
             let boost = clean_amp * 40.0;
 
-            egui::CentralPanel::default().show(egui_ctx, |ui| {
+            egui::CentralPanel::default()
+                .frame(egui::Frame::none())
+                .show(egui_ctx, |ui| {
                 let rect = ui.max_rect();
                 let time = ui.input(|i| i.time);
 
@@ -153,70 +180,36 @@ pub fn create(
                         let size = base_size + boost;
 
                         // ゆめかわ
-                        let mut particle_color = get_yumekawa_color(time, seed);
-
-                        // すけすけ
-                        let alpha = (clean_amp * 200.0).clamp(0.0, 150.0) as u8;
-
-                        // 色に透明度を追加
-                        particle_color = Color32::from_rgba_premultiplied(
-                            particle_color.r(),
-                            particle_color.g(),
-                            particle_color.b(),
-                            alpha
-                        );
+                        let color = get_kawaii_color(time, seed * 0.1);
 
                         // アメーバ
-                        paint_amoeba(ui, Pos2::new(x, y), size, particle_color, time, seed);
+                        paint_amoeba(ui, Pos2::new(x, y), size, color, time, seed);
                     }
                 }
 
                 /* UIパネル */
-                ui.vertical_centered(|ui| {
-                    // 画面の中央に配置
-                    ui.add_space(30.0);
+                ui.with_layout(
+                    egui::Layout::top_down(egui::Align::Center)
+                        .with_cross_align(egui::Align::Center),
+                    |ui| {
 
                     // 透明パネル
-                    let panel_response = egui::Frame::default()
-                        .fill(Color32::from_white_alpha(80))  // 半透明の白でガラス感
-                        .inner_margin(30.0) // 内側の余白
-                        .outer_margin(10.0) // 外側の余白
+                    egui::Frame::none()
+                        .fill(Color32::from_white_alpha(15)) // ベースはかなり透明に
+                        .rounding(20.0) // 角を丸くする
+                        .stroke(Stroke::new(1.5, Color32::from_white_alpha(150))) // 縁取り（リムライト）を明るく入れる
+                        .shadow(egui::epaint::Shadow {
+                            offset: [0, 0], // 影の位置ズレなし
+                            blur: 20,               // ぼかしを強めに入れて「浮いている」感じに
+                            spread: 5,              // 影を少し外側に広げる
+                            color: Color32::from_black_alpha(40),
+                        })
+                        .inner_margin(30.0)
+                        .outer_margin(30.0) // 左右に余白を持たせる
                         .show(ui, |ui| {
-                            // パネル内にガラスっぽいグラデーションを重ねる
-                            let panel_rect = ui.max_rect();
-
-                            // 上部が明るく、下部が暗いグラデーション
-                            let top_color = Color32::from_white_alpha(60);
-                            let bottom_color = Color32::from_white_alpha(20);
-
-                            let mut glass_mesh = Mesh::default();
-                            glass_mesh.vertices.push(egui::epaint::Vertex {
-                                pos: panel_rect.min,
-                                uv: Pos2::ZERO,
-                                color: top_color
-                            });
-                            glass_mesh.vertices.push(egui::epaint::Vertex {
-                                pos: Pos2::new(panel_rect.max.x, panel_rect.min.y),
-                                uv: Pos2::ZERO,
-                                color: top_color
-                            });
-                            glass_mesh.vertices.push(egui::epaint::Vertex {
-                                pos: panel_rect.max,
-                                uv: Pos2::ZERO,
-                                color: bottom_color
-                            });
-                            glass_mesh.vertices.push(egui::epaint::Vertex {
-                                pos: Pos2::new(panel_rect.min.x, panel_rect.max.y),
-                                uv: Pos2::ZERO,
-                                color: bottom_color
-                            });
-                            glass_mesh.add_triangle(0, 1, 2);
-                            glass_mesh.add_triangle(0, 2, 3);
-                            ui.painter().add(Shape::mesh(glass_mesh));
-
                             // タイトル
                             ui.heading(
-                                egui::RichText::new("Tape Stop")
+                                egui::RichText::new("Kyun'Stop")
                                     .size(28.0)
                                     .strong()
                                     .color(Color32::from_rgb(200, 80, 120))
@@ -235,17 +228,59 @@ pub fn create(
                                     };
 
                                     // Curve
-                                    ui.label(label("Curve"));
+                                    ui.label(label("CURVE"));
                                     let mut selected_curve = params.curve.value();
-                                    egui::ComboBox::new("curve", "")
-                                        .selected_text(format!("{:?}", selected_curve))
-                                        .width(130.0)
-                                        .show_ui(ui, |ui| {
-                                            ui.selectable_value(&mut selected_curve, TapeCurve::Linear, "Linear");
-                                            ui.selectable_value(&mut selected_curve, TapeCurve::Smooth, "Smooth");
-                                            ui.selectable_value(&mut selected_curve, TapeCurve::SlowStart, "SlowStart");
-                                            ui.selectable_value(&mut selected_curve, TapeCurve::QuickCut, "QuickCut");
-                                        });
+                                    ui.scope(|ui| {
+                                        let visuals = ui.visuals_mut();
+
+                                        let pink_base   = Color32::from_rgb(255, 220, 240);
+                                        let pink_hover  = Color32::from_rgb(255, 235, 250);
+                                        let pink_active = Color32::from_rgb(255, 200, 230);
+                                        let pink_select = Color32::from_rgb(255, 180, 210);
+                                        let pink_stroke = Color32::from_rgb(255, 120, 170);
+
+                                        // 通常時
+                                        visuals.widgets.inactive.bg_fill = pink_base;
+                                        visuals.widgets.inactive.weak_bg_fill = pink_base;
+
+                                        // ホバー時
+                                        visuals.widgets.hovered.bg_fill = pink_hover;
+                                        visuals.widgets.hovered.weak_bg_fill = pink_hover;
+                                        visuals.widgets.hovered.expansion = 2.0;
+
+                                        // 開いている時
+                                        visuals.widgets.open.bg_fill = pink_hover;
+                                        visuals.widgets.open.weak_bg_fill = pink_hover;
+
+                                        // 押したとき
+                                        visuals.widgets.active.bg_fill = pink_active;
+                                        visuals.widgets.active.weak_bg_fill = pink_active;
+
+                                        // 選択部分
+                                        visuals.selection.bg_fill = pink_select;
+                                        visuals.selection.stroke = Stroke::new(1.0, pink_stroke);
+
+                                        // 枠線と文字色
+                                        visuals.widgets.inactive.fg_stroke = Stroke::new(1.0, Color32::from_rgb(120, 80, 100));
+                                        visuals.widgets.inactive.bg_stroke = Stroke::new(1.0, pink_stroke);
+
+                                        visuals.widgets.hovered.fg_stroke = Stroke::new(1.0, Color32::from_rgb(120, 80, 100));
+                                        visuals.widgets.hovered.bg_stroke = Stroke::new(1.5, pink_stroke);
+
+                                        visuals.widgets.open.bg_stroke = Stroke::new(1.0, pink_stroke);
+
+                                        // コンボボックス描画
+                                        egui::ComboBox::new("CURVE", "")
+                                            .selected_text(format!("{:?}", selected_curve))
+                                            .width(130.0)
+                                            .show_ui(ui, |ui| {
+                                                ui.selectable_value(&mut selected_curve, TapeCurve::Linear, "Linear");
+                                                ui.selectable_value(&mut selected_curve, TapeCurve::Smooth, "Smooth");
+                                                ui.selectable_value(&mut selected_curve, TapeCurve::SlowStart, "SlowStart");
+                                                ui.selectable_value(&mut selected_curve, TapeCurve::QuickCut, "QuickCut");
+                                            });
+                                    });
+
                                     if selected_curve != params.curve.value() {
                                         setter.begin_set_parameter(&params.curve);
                                         setter.set_parameter(&params.curve, selected_curve);
@@ -254,7 +289,7 @@ pub fn create(
                                     ui.end_row();
 
                                     // BPM Sync
-                                    ui.label(label("Sync"));
+                                    ui.label(label("SYNC"));
                                     let mut use_sync = params.use_sync.value();
                                     let sync_text = if use_sync { "ON ♪" } else { "OFF" };
                                     if ui.checkbox(&mut use_sync, sync_text).changed() {
@@ -265,11 +300,11 @@ pub fn create(
                                     ui.end_row();
 
                                     // スライダー
-                                    ui.label(label("Stop Time"));
+                                    ui.label(label("STOP TIME"));
                                     ui.add(widgets::ParamSlider::for_param(&params.stop_time, setter).with_width(140.0));
                                     ui.end_row();
 
-                                    ui.label(label("Start Time"));
+                                    ui.label(label("START TIME"));
                                     ui.add(widgets::ParamSlider::for_param(&params.start_time, setter).with_width(140.0));
                                     ui.end_row();
                                 });
