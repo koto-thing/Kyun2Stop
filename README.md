@@ -17,7 +17,7 @@ The rest of this README was written by AI.
 
 **キュンとストップ** は、Rustと `nih-plug` で開発された、オーディオリアクティブなビジュアルを持つテープストップ・エフェクトプラグインです。
 
-<img width="597" height="400" alt="image" src="https://github.com/user-attachments/assets/8c6e7019-c63c-45c2-a6b4-40354bedc6eb" />
+<img width="599" height="396" alt="image" src="https://github.com/user-attachments/assets/9c624926-a3ec-44c8-b30b-2371974ef716" />
 
 ## ✨ 特徴 (Features)
 
