@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\PandD\Kyun2Stop\examples\cpp\build\CMakeFiles\b1a41038f644a757395de5dd0b39e039\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{B04638F7-D641-3C03-A315-6F6CAA6054AA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

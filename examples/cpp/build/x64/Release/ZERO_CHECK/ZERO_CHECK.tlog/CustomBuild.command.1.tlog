@@ -1,0 +1,10 @@
+^D:\PANDD\KYUN2STOP\EXAMPLES\CPP\BUILD\CMAKEFILES\B1A41038F644A757395DE5DD0B39E039\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/PandD/Kyun2Stop/examples/cpp -BD:/PandD/Kyun2Stop/examples/cpp/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/PandD/Kyun2Stop/examples/cpp/build/k2s_ffi_example.slnx
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

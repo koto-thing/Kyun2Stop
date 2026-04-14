@@ -6,6 +6,7 @@ use nih_plug_egui::EguiState;
 mod params;
 mod dsp;
 mod editor;
+pub mod ffi;
 
 use params::TapeStopParams;
 use dsp::engine::TapeStopEngine;
@@ -31,7 +32,7 @@ impl Default for TapeStop {
 impl Plugin for TapeStop {
     const NAME: &'static str = "Kyun'Stop";
     const VENDOR: &'static str = "Goto Kenta";
-    const URL: &'static str = "https://koto-thing.github.io/MyWebsite/";
+    const URL: &'static str = "https://koto-thing.com/portfolio/";
     const EMAIL: &'static str = "gotoukenta62@gmail.com";
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 

@@ -41,5 +41,61 @@ The rest of this README was written by AI.
 
 1. **リポジトリのクローン**
    ```bash
-   git clone [https://github.com/YourUsername/YourProjectName.git](https://github.com/YourUsername/YourProjectName.git)
-   cd YourProjectName
+   git clone https://github.com/koto-thing/Kyun2Stop.git
+   cd Kyun2Stop
+   ```
+
+2. **ビルド**
+   ```powershell
+   cargo build --release
+   ```
+
+## C++から使うためのFFI
+
+VST3エクスポートとは別に、C/C++向け `extern "C"` APIを追加しています。
+公開ヘッダは `include/kyun2stop_ffi.h` です。
+
+### ヘッダ生成（cbindgen）
+
+`cbindgen` を使ってヘッダを再生成できます。
+
+```powershell
+cargo install cbindgen
+powershell -ExecutionPolicy Bypass -File .\scripts\generate_ffi_header.ps1
+```
+
+### FFIビルド成果物
+
+```powershell
+cargo build --release
+```
+
+`target\release\` に `Kyun2Stop.dll` と `Kyun2Stop.lib`（環境依存）が出力されます。
+
+### FFI APIの基本フロー
+
+1. `k2s_create()` でエンジンハンドルを作成
+2. `k2s_process_interleaved_f32()` で `float` インターリーブ音声を処理
+3. `k2s_destroy()` でハンドルを破棄
+
+`k2s_process_interleaved_f32()` の `frames` はフレーム数です。
+バッファ長は `frames * channels` を確保してください。
+
+### C++サンプル
+
+`examples/cpp/main.cpp` に最小サンプルがあります。
+RAIIラッパは `examples/cpp/k2s_raii.hpp` です。
+
+```powershell
+Set-Location examples\cpp
+cmake -S . -B build
+cmake --build build --config Release
+.\build\Release\k2s_ffi_example.exe
+```
+
+### FFIのRustテスト
+
+```powershell
+cargo test ffi::tests::ffi_matches_direct_engine_for_interleaved_stereo -- --nocapture
+```
+
