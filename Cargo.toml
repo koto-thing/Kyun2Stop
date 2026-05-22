@@ -1,6 +1,6 @@
 [package]
 name = "Kyun2Stop"
-version = "0.1.0"
+version = "1.2.1"
 edition = "2024"
 
 [dependencies]
@@ -9,3 +9,8 @@ nih_plug_egui = { git = "https://github.com/robbert-vdh/nih-plug.git" }
 
 [lib]
 crate-type = ["cdylib", "staticlib"]
+
+[patch."https://github.com/robbert-vdh/nih-plug.git"]
+nih_plug = { path = "nih-plug-patched" }
+nih_plug_egui = { path = "nih-plug-patched/nih_plug_egui" }
+

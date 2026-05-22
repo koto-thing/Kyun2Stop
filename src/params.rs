@@ -1,4 +1,4 @@
-﻿use nih_plug::prelude::*;
+use nih_plug::prelude::*;
 
 // カーブの種類
 #[derive(Enum, PartialEq, Clone, Copy, Debug)]
@@ -51,16 +51,12 @@ pub struct TapeStopParams {
 impl Default for TapeStopParams {
     fn default() -> Self {
         Self {
-            trigger: BoolParam::new("Trigger", false)
-                .non_automatable(),
-            use_sync: BoolParam::new("BPM Sync", false)
-                .non_automatable(),
+            trigger: BoolParam::new("Trigger", false),
+            use_sync: BoolParam::new("BPM Sync", false),
             stop_time: FloatParam::new("Stop Time (Sec)", 0.5, FloatRange::Linear { min: 0.1, max: 2.0 }),
-            sync_beat: EnumParam::new("Stop Beat", SyncBeat::Quarter)
-                .non_automatable(),
+            sync_beat: EnumParam::new("Stop Beat", SyncBeat::Quarter),
             start_time: FloatParam::new("Start Time", 0.5, FloatRange::Linear { min: 0.1, max: 2.0 }),
-            curve: EnumParam::new("Curve", TapeCurve::Linear)
-                .non_automatable(),
+            curve: EnumParam::new("Curve", TapeCurve::Linear),
             enable_filter: BoolParam::new("Low-pass Effect", true),
         }
     }

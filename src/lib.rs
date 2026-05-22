@@ -156,7 +156,7 @@ impl Plugin for TapeStop {
 }
 
 impl Vst3Plugin for TapeStop {
-    const VST3_CLASS_ID: [u8; 16] = *b"TapeStopPlugin12";
+    const VST3_CLASS_ID: [u8; 16] = *b"TapeStopPlugin15";
     const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[Vst3SubCategory::Fx, Vst3SubCategory::Modulation];
 }
 

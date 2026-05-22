@@ -1,5 +1,8 @@
 # Tape Stopの仕組み
 
+このプロジェクトにはバグ修正パッチを適用した `nih-plug` が含まれています。
+テープストップエフェクトの実装は、以下のような仕組みで行われています。
+
 * リングバッファを用いて、今流れている音声データを保存する。
 * テープストップがトリガーされると、保存された音声データを逆再生しながらピッチを下げていく。
 * ピッチの変化は、選択されたカーブに基づいて計算される。
@@ -37,7 +40,11 @@ The rest of this README was written by AI.
 
 ## 📦 ビルド方法 (Build)
 
-このプラグインをビルドするには、Rustのツールチェーンが必要です。
+### 🔧 パッチ適用済みの `nih-plug` について (Patched nih-plug)
+
+本プロジェクトでは、一部のホストDAW（Cubaseなど、トランスポート停止時にオーディオ処理スレッドを停止するDAW）において、トランスポート停止中にGUIのパラメータ値（Tap To Stopボタンなど）が正常に更新・保持されないバグを修正するため、ローカルのパッチ版 `nih-plug`（`nih-plug-patched`）を使用しています。
+
+このローカルパッチは `Cargo.toml` の `[patch]` セクションで自動的に適用されるため、通常のビルド手順（`build_vst3.ps1` の実行など）をそのまま行うだけで問題ありません。また、`nih-plug-patched` 内のソースコードも Git で追跡されているため、別途 submodule 等のセットアップは不要です。
 
 1. **リポジトリのクローン**
    ```bash
@@ -45,10 +52,23 @@ The rest of this README was written by AI.
    cd Kyun2Stop
    ```
 
-2. **ビルド**
-   ```powershell
-   cargo build --release
-   ```
+2. **ビルドとパッケージング (Windows)**
+
+   Windows環境では、ビルド後に正しくVST3のディレクトリ構成（バンドル形式）にする必要があります。単に `.dll` を `.vst3` にリネームして配置しただけでは、Cubaseなどの厳格なDAWでロードに失敗します。
+   
+   リポジトリ内のスクリプトを使用することで、自動でビルド・パッケージングを行えます。
+
+   * **ビルドとパッケージングのみ実行する場合:**
+     ```powershell
+     powershell -ExecutionPolicy Bypass -File .\scripts\build_vst3.ps1
+     ```
+     ビルド成果物は `target\bundled\Kyun2Stop.vst3` に出力されます。
+
+   * **ビルド後にシステムVST3フォルダ（`C:\Program Files\Common Files\VST3\`）へのインストールまで行う場合:**
+     （※ 管理者権限で起動したPowerShellで実行してください）
+     ```powershell
+     powershell -ExecutionPolicy Bypass -File .\scripts\build_vst3.ps1 -Install
+     ```
 
 ## C++から使うためのFFI
 
